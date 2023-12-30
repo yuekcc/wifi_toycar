@@ -67,24 +67,38 @@
       const controls = [];
       setTimeout(async () => {
         for (;;) {
-          const control = controls.pop();
+          const control = controls.shift();
           if (control) {
             await control();
           }
 
-          await new Promise((resolve) => setTimeout(resolve, 50));
+          await new Promise((resolve) => setTimeout(resolve, 100));
         }
       }, 100);
 
-      function send(num) {
-        controls.push(() => fetch(`/api/control/${num}`));
+      function send(btnName) {
+        console.log('#add', btnName);
+        controls.push(() => {
+          console.log('#send', btnName);
+          return fetch(`/api/control/${btnName}`);
+        });
+      }
+
+      function pressLeft() {
+        send('front')
+        send('left')
+      }
+
+      function pressRight() {
+        send('front')
+        send('right')
       }
     </script>
     <div style="margin: auto 0; display: flex; gap: 5px; justify-content: space-between; user-select: none; width: 100%; padding: 20px">
       <div style="flex: initial; display: flex; gap: 5px">
-        <div class="box" onclick="send('left')">左</div>
+        <div class="box" onclick="pressLeft()">左</div>
         <div class="box" onclick="send('front')">上</div>
-        <div class="box" onclick="send('right')">右</div>
+        <div class="box" onclick="pressRight()">右</div>
       </div>
       <div style="flex: initial; display: flex; flex-direction: column; gap: 5px">
         <div class="box" onclick="send('forward')">前</div>

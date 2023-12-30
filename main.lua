@@ -14,52 +14,55 @@ function DirectionMotor.new(a, b)
     }
 end
 
-function DirectionMotor.left(self)
-    DirectionMotor.stop(self)
-    self.channal_a(0)
-    self.channal_b(1)
-end
-
-function DirectionMotor.right(self)
-    DirectionMotor.stop(self)
-    self.channal_a(1)
-    self.channal_b(0)
-end
-
 function DirectionMotor.stop(self)
     self.channal_a(0)
     self.channal_b(0)
 end
 
-MainMotor = {}
-function MainMotor.new(a, b)
-    return {
-        channal_a = gpio.setup(a, 0, gpio.PULLUP),
-        channal_b = gpio.setup(b, 0, gpio.PULLUP),
-    }
-end
-
-function MainMotor.left(self)
-    MainMotor.stop(self)
+function DirectionMotor.left(self)
     self.channal_a(0)
     self.channal_b(1)
 end
 
-function MainMotor.right(self)
-    MainMotor.stop(self)
+function DirectionMotor.right(self)
     self.channal_a(1)
     self.channal_b(0)
+end
+
+MainMotor = {}
+function MainMotor.new(a, b, c, d)
+    return {
+        channal_a = gpio.setup(a, 0, gpio.PULLUP),
+        channal_b = gpio.setup(b, 0, gpio.PULLUP),
+        channal_c = gpio.setup(c, 0, gpio.PULLUP),
+        channal_d = gpio.setup(d, 0, gpio.PULLUP),
+    }
+end
+
+function MainMotor.left(self)
+    self.channal_a(1)
+    self.channal_b(0)
+    self.channal_c(1)
+    self.channal_d(0)
+end
+
+function MainMotor.right(self)
+    self.channal_a(0)
+    self.channal_b(1)
+    self.channal_c(0)
+    self.channal_d(1)
 end
 
 function MainMotor.stop(self)
     self.channal_a(0)
     self.channal_b(0)
+    self.channal_c(0)
+    self.channal_d(0)
 end
 
-
 local motors = {}
-motors.main = MainMotor.new(4, 5)
 motors.direction = DirectionMotor.new(0, 1)
+motors.main = MainMotor.new(4, 5, 12, 13)
 
 function on_btn_press(btn)
     local log_tag = "on_btn_press";
@@ -89,8 +92,7 @@ function btn_contraller(uri)
     local btn = string.sub(uri, 14)
     log.info(log_tag, "btn =>" .. btn)
     if btn then
-        -- 发布事件
-        sys.publish("btn_press", btn)
+        on_btn_press(btn)
     end
 end
 
@@ -120,27 +122,28 @@ function init_http_server()
         local log_tag = "httpsrv"
         log.info(log_tag, method, uri)
 
-        if string.sub(uri, 1, 13) == "/api/control/" then
+        if string.find(uri, "/api/control/") == 1 then
             btn_contraller(uri)
             return 200, {}, "ok"
         end
 
-        return 404, {}, "Not Found" .. uri
+        return 404, {}, "not found"
     end)
 end
 
 function init_system()
+    log.info("init_system")
     -- 初始化 wlan
     sys.wait(1000)
     wlan.init()
-    sys.wait(300)
-    setup_station_mode()
+    sys.wait(500)
+    -- setup_station_mode()
+    setup_ap_mode()
     sys.wait(500)
 
     init_http_server()
 end
 
-sys.subscribe("btn_press", on_btn_press)
 sys.taskInit(init_system)
 
 sys.run()
