@@ -1,4 +1,16 @@
-参考：https://www.bilibili.com/read/cv15460009/
+# 基于 Wifi 的遥控车
+
+使用 ESP32-C3 控制遥控车，ESP32-C3 + micropython。
+
+| 模块                                     | 用途         | 价格    |
+| ---------------------------------------- | ------------ | ------- |
+| [合宙 ESP32C3-CORE 开发板][ESP32C3-CORE] | 控制板       | 13.9 元 |
+| [HS-F04A 电机驱动模块][HS-F04A]          | 方向电机控制 |
+| [HS-F09C 双路电机驱动板][HS-F09C]        | 动力电机控制 |
+
+[ESP32C3-CORE]: https://wiki.luatos.com/chips/esp32c3/board.html
+[HS-F04A]: http://www.hellostem.cn/?chuanganqipeijiandeng/hs_f04adianjiqudongmokuai.html
+[HS-F09C]: http://www.hellostem.cn/?chuanganqipeijiandeng/s_f09abshuangludianjiqudongban.html
 
 ## 开发工具
 
@@ -12,13 +24,13 @@ IDE 可以用 [thonny](https://github.com/thonny/thonny/releases/tag/v4.1.4)。t
 
 **以下命令是通过 thonny 的 Open system shell 打开的 shell 中执行**。通过 thonny 打开 shell，会设置相应的环境变量，可以使用 esptool。
 
+参考：https://www.bilibili.com/read/cv15460009/
 
 ### 确认 COM 口
 
 首先是确定连接板子的 COM 口。windows 11 一般情况下不需要安装驱动。如果找到没有识别的设备，可以试试安装相应的驱动。
 
->也需要检查 USB 线和电脑的 USB 插口。换不同的插口，可能有奇效。
-
+> 也需要检查 USB 线和电脑的 USB 插口。换不同的插口，可能有奇效。
 
 通过下面的命令查找 COM 口
 
@@ -98,7 +110,6 @@ Leaving...
 Hard resetting via RTS pin...
 ```
 
-
 `ESP32_GENERIC_C3-20240105-v1.22.1.bin` 文件可以在 [micropython.org](https://micropython.org/download/ESP32_GENERIC_C3/) 下载。注意需要选择 **ESP32-C3** 芯片的 bin 文件。
 
 完成后按提示重启一下板子。
@@ -125,4 +136,4 @@ while True:
     led2.off()
 ```
 
-在保存的时候，选择 `MicroPython device`，然后点击 Run -> Run current script。顺利的话，就可以看到板载的 LED 灯在闪烁。 
+在保存的时候，选择 `MicroPython device`，然后点击 Run -> Run current script。顺利的话，就可以看到板载的 LED 灯在闪烁。
