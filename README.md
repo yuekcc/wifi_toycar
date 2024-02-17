@@ -10,11 +10,15 @@ IDE 可以用 [thonny](https://github.com/thonny/thonny/releases/tag/v4.1.4)。t
 
 ## 烧录 micropython
 
+**以下命令是通过 thonny 的 Open system shell 打开的 shell 中执行**。通过 thonny 打开 shell，会设置相应的环境变量，可以使用 esptool。
+
+
+### 确认 COM 口
+
 首先是确定连接板子的 COM 口。windows 11 一般情况下不需要安装驱动。如果找到没有识别的设备，可以试试安装相应的驱动。
 
 >也需要检查 USB 线和电脑的 USB 插口。换不同的插口，可能有奇效。
 
-**以下命令在 thonny 的 Open system shell** 窗口中执行。在 thonny 打开 shell，会设置相应的环境变量。
 
 通过下面的命令查找 COM 口
 
@@ -36,7 +40,9 @@ Z:\>
 
 每个机器可能不同的。注意区分。
 
-然后是清理自带的 ROM：
+### 清理自带的 ROM
+
+执行命令：
 
 ```
 esptool.py --chip esp32-c3 --port COM4 erase_flash
@@ -60,7 +66,9 @@ Chip erase completed successfully in 2.9s
 Hard resetting via RTS pin...
 ```
 
-刷入 micropython ROM：
+## 刷入 MicroPython ROM
+
+执行命令：
 
 ```
 $ esptool.py --chip esp32-c3 --port COM4 --baud 460800 write_flash -z 0x0 ESP32_GENERIC_C3-20240105-v1.22.1.bin
