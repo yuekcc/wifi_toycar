@@ -163,7 +163,7 @@ async def handle_connection(reader, writer):
 
 async def main():
     server = await asyncio.start_server(handle_connection, "0.0.0.0", 80)
-    print("lalala ready, hosted on http://%s:%d" % (ap.ifconfig()[0], 80))
+    print("toycar ready, hosted on http://%s:%d" % (ap.ifconfig()[0], 80))
     await server.wait_closed()
 
 
