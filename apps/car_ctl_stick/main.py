@@ -37,8 +37,11 @@ def to_y_direct_enum(num):
 def get_x():
     return to_x_direct_enum(adc_x.read())
 
+
 def make_request(x_state):
-    return "GET /api/control/{} HTTP/1.1\r\nHost: {}:{}\r\nUser-Agent: mpy-esp32\r\nAccept: application/json\r\n\r\n".format(x_state, API_SERVER_HOST, API_SERVER_PORT)
+    return "GET /api/control/{} HTTP/1.1\r\nHost: {}:{}\r\nUser-Agent: mpy-esp32\r\nAccept: application/json\r\n\r\n".format(
+        x_state, API_SERVER_HOST, API_SERVER_PORT
+    )
 
 
 def get_y():
@@ -58,11 +61,13 @@ def init_network():
         led2.on()
         print("connect to wlan, ip =", wlan.ifconfig()[0])
 
+
 def send_request(body):
     s = socket.socket()
     s.connect((API_SERVER_HOST, API_SERVER_PORT))
     s.send(body)
     s.close()
+
 
 def main():
     led1.off()
@@ -70,22 +75,22 @@ def main():
 
     led1.on()
     init_network()
-    
-    last_x_state = ''
+
+    last_x_state = ""
     while True:
         x_state = to_x_direct_enum(adc_x.read())
         print("x =", x_state)
-        
+
         if x_state != last_x_state:
             body = make_request(x_state)
-            print('send request', body)
-            send_request(body.encode('utf8'))
+            print("send request", body)
+            send_request(body.encode("utf8"))
             last_x_state = x_state
-            
-        #k_ = k.value()
-        #print("x =", get_x())
-        #print("y =", get_y())
-        
+
+        # k_ = k.value()
+        # print("x =", get_x())
+        # print("y =", get_y())
+
         time.sleep(0.3)
 
 
