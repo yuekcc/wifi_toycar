@@ -2,9 +2,9 @@ from machine import Pin, I2C, ADC
 import socket
 import time
 
-WLAN_SSID = ""
-WLAN_PASSWORD = ""
-API_SERVER_HOST = ""
+WLAN_SSID = "toycar"
+WLAN_PASSWORD = "123456789"
+API_SERVER_HOST = "192.168.4.1"
 API_SERVER_PORT = 80
 
 led1 = Pin(12, Pin.OUT)
@@ -22,16 +22,16 @@ def to_x_direct_enum(num):
     elif num < 1500:
         return "right"
     else:
-        return "middle"
+        return "front" # middle
 
 
 def to_y_direct_enum(num):
     if num > 3000:
-        return "down"
+        return "backward"
     elif num < 1500:
-        return "up"
+        return "forward"
     else:
-        return "middle"
+        return "middle" # middle
 
 
 def get_x():
@@ -59,7 +59,9 @@ def init_network():
         while not wlan.isconnected():
             pass
         led2.on()
-        print("connect to wlan, ip =", wlan.ifconfig()[0])
+        ip, netmask, gateway, dns_addr = wlan.ifconfig()
+        print("connect to wlan, ip =", ip)
+        API_SERVER_HOST = gateway
 
 
 def send_request(body):
@@ -77,21 +79,31 @@ def main():
     init_network()
 
     last_x_state = ""
+    last_y_state = ''
     while True:
+        k_ = k.value()
         x_state = to_x_direct_enum(adc_x.read())
-        print("x =", x_state)
+        y_state = to_y_direct_enum(adc_y.read())
+        print("x =", x_state, "y =", y_state, "k_ =", k_)
 
         if x_state != last_x_state:
             body = make_request(x_state)
             print("send request", body)
             send_request(body.encode("utf8"))
             last_x_state = x_state
+        
+        if y_state != last_y_state:
+            body = make_request(y_state)
+            print("send request", body)
+            send_request(body.encode("utf8"))
+            last_y_state = y_state
 
-        # k_ = k.value()
-        # print("x =", get_x())
-        # print("y =", get_y())
+        if k_ == 0:
+            body = make_request('stop')
+            print("send request", body)
+            send_request(body.encode("utf8"))
 
-        time.sleep(0.3)
+        time.sleep(0.1)
 
 
 main()
