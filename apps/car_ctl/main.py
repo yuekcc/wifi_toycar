@@ -7,14 +7,26 @@ class Motor:
         self._p2 = Pin(p2, Pin.OUT)
 
     def clockwise(self):
+        """
+        顺针方向转
+        """
+
         self._p1.on()
         self._p2.off()
 
     def counterclockwise(self):
+        """
+        逆时针方向转
+        """
+
         self._p1.off()
         self._p2.on()
 
     def stop(self):
+        """
+        停车
+        """
+
         self._p1.off()
         self._p2.off()
 
@@ -38,8 +50,8 @@ def dispatch_cmd(cmd):
         m1.clockwise()
         m2.clockwise()
     elif cmd == b"backward":
-        m1.clockwise()
-        m2.clockwise()
+        m1.counterclockwise()
+        m2.counterclockwise()
     elif stop == b"stop":
         direct_motor.stop()
         m1.stop()

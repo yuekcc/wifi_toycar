@@ -22,7 +22,7 @@ def to_x_direct_enum(num):
     elif num < 1500:
         return "right"
     else:
-        return "front" # middle
+        return "front"  # middle
 
 
 def to_y_direct_enum(num):
@@ -31,7 +31,7 @@ def to_y_direct_enum(num):
     elif num < 1500:
         return "forward"
     else:
-        return "middle" # middle
+        return "middle"  # middle
 
 
 def get_x():
@@ -79,7 +79,7 @@ def main():
     init_network()
 
     last_x_state = ""
-    last_y_state = ''
+    last_y_state = ""
     while True:
         k_ = k.value()
         x_state = to_x_direct_enum(adc_x.read())
@@ -91,7 +91,7 @@ def main():
             print("send request", body)
             send_request(body.encode("utf8"))
             last_x_state = x_state
-        
+
         if y_state != last_y_state:
             body = make_request(y_state)
             print("send request", body)
@@ -99,7 +99,7 @@ def main():
             last_y_state = y_state
 
         if k_ == 0:
-            body = make_request('stop')
+            body = make_request("stop")
             print("send request", body)
             send_request(body.encode("utf8"))
 
