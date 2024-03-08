@@ -227,6 +227,11 @@ def parse_request(chunk):
     return (http_method, url, version, body)
 
 
+def handle_car_control(url):
+    cmd_type = url[len("/api/control/") :]
+    dispatch_cmd(cmd_type)
+
+
 async def handle_connection(reader, writer):
     req = await reader.read(512)
     http_method, url, version, req_body = parse_request(req.decode("utf8"))
@@ -234,6 +239,9 @@ async def handle_connection(reader, writer):
 
     if url == "/":
         writer.write(index_html.encode("utf8"))
+    elif url.startswith("/api/control/"):
+        handle_car_control(url)
+        writer.write("\r\n\r\n".encode("utf8"))
     else:
         writer.write(notfound.encode("utf8"))
 

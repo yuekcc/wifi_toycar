@@ -1,6 +1,11 @@
-from machine import Pin, I2C, ADC
+"""
+遥控车控制手柄
+"""
+
+from machine import Pin, ADC
 import socket
 import time
+import network
 
 WLAN_SSID = "toycar"
 WLAN_PASSWORD = "123456789"
@@ -39,8 +44,12 @@ def get_x():
 
 
 def make_request(x_state):
-    return "GET /api/control/{} HTTP/1.1\r\nHost: {}:{}\r\nUser-Agent: mpy-esp32\r\nAccept: application/json\r\n\r\n".format(
-        x_state, API_SERVER_HOST, API_SERVER_PORT
+    global API_SERVER_HOST
+    global API_SERVER_PORT
+
+    url = "/api/control/{}".format(x_state)
+    return "GET {} HTTP/1.1\r\nHost: {}:{}\r\nUser-Agent: mpy-esp32\r\nAccept: application/json\r\n\r\n".format(
+        url, API_SERVER_HOST, API_SERVER_PORT
     )
 
 
@@ -49,7 +58,7 @@ def get_y():
 
 
 def init_network():
-    import network
+    global API_SERVER_HOST
 
     wlan = network.WLAN(network.STA_IF)
     wlan.active(True)
@@ -65,6 +74,9 @@ def init_network():
 
 
 def send_request(body):
+    global API_SERVER_HOST
+    global API_SERVER_PORT
+
     s = socket.socket()
     s.connect((API_SERVER_HOST, API_SERVER_PORT))
     s.send(body)
