@@ -1,4 +1,5 @@
 import network
+import socket
 import asyncio
 from machine import Pin
 
@@ -44,9 +45,9 @@ m2 = Motor(12, 13)
 def dispatch_cmd(cmd):
     print("dispatch_cmd", cmd)
     if cmd == "left":
-        direct_motor.clockwise()
-    elif cmd == "right":
         direct_motor.counterclockwise()
+    elif cmd == "right":
+        direct_motor.clockwise()
     elif cmd == "front":
         direct_motor.stop()
     elif cmd == "forward":
@@ -86,17 +87,7 @@ def test_dispatch_cmd():
 
 notfound = "HTTP/1.1 404 Not Found\r\nContent-Type: text/plain; charset=UTF-8\r\nX-Server: mpy\r\nConnection: close\r\n\r\n"
 
-
-def get_header(mime_type):
-    return "HTTP/1.1 200 OK\r\nContent-Type: {}; charset=UTF-8\r\nX-Server: mpy\r\nConnection: close".format(
-        mime_type
-    )
-
-
-index_html = (
-    get_header("text/html")
-    + "\r\n\r\n"
-    + """<!DOCTYPE html>
+index_html = """<!DOCTYPE html>
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
@@ -207,7 +198,23 @@ index_html = (
   </body>
 </html>
 """
-)
+
+
+def get_header(mime_type):
+    return "HTTP/1.1 200 OK\r\nContent-Type: {}; charset=UTF-8\r\nX-Server: mpy\r\nConnection: close".format(
+        mime_type
+    )
+
+
+def reply_with_cmd_type(cmd_type):
+    header = get_header("application/json")
+    body = "{" + f'"cmd_type": "{cmd_type}"' + "}"
+    return header + "\r\n\r\n" + body
+
+
+def reply_with_index_html():
+    header = get_header("text/html")
+    return header + "\r\n\r\n" + index_html
 
 
 # setup wifi
@@ -230,6 +237,7 @@ def parse_request(chunk):
 def handle_car_control(url):
     cmd_type = url[len("/api/control/") :]
     dispatch_cmd(cmd_type)
+    return cmd_type
 
 
 async def handle_connection(reader, writer):
@@ -238,10 +246,10 @@ async def handle_connection(reader, writer):
     print(http_method, url, version, req_body)
 
     if url == "/":
-        writer.write(index_html.encode("utf8"))
+        writer.write(reply_with_index_html().encode("utf8"))
     elif url.startswith("/api/control/"):
-        handle_car_control(url)
-        writer.write("\r\n\r\n".encode("utf8"))
+        cmd_type = handle_car_control(url)
+        writer.write(reply_with_cmd_type(cmd_type).encode("utf8"))
     else:
         writer.write(notfound.encode("utf8"))
 
@@ -252,9 +260,10 @@ async def handle_connection(reader, writer):
 
 
 async def main():
-    server = await asyncio.start_server(handle_connection, "0.0.0.0", 80)
+    server = await asyncio.start_server(handle_connection, host="0.0.0.0", port=80)
     print("toycar ready, hosted on http://%s:%d" % (ap.ifconfig()[0], 80))
     await server.wait_closed()
+    print("shutdown")
 
 
 asyncio.run(main())

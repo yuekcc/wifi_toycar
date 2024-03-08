@@ -1,7 +1,3 @@
-"""
-遥控车控制手柄
-"""
-
 from machine import Pin, ADC
 import socket
 import time
@@ -44,9 +40,6 @@ def get_x():
 
 
 def make_request(x_state):
-    global API_SERVER_HOST
-    global API_SERVER_PORT
-
     url = "/api/control/{}".format(x_state)
     return "GET {} HTTP/1.1\r\nHost: {}:{}\r\nUser-Agent: mpy-esp32\r\nAccept: application/json\r\n\r\n".format(
         url, API_SERVER_HOST, API_SERVER_PORT
@@ -74,9 +67,6 @@ def init_network():
 
 
 def send_request(body):
-    global API_SERVER_HOST
-    global API_SERVER_PORT
-
     s = socket.socket()
     s.connect((API_SERVER_HOST, API_SERVER_PORT))
     s.send(body)
@@ -93,29 +83,31 @@ def main():
     last_x_state = ""
     last_y_state = ""
     while True:
-        k_ = k.value()
-        x_state = to_x_direct_enum(adc_x.read())
-        y_state = to_y_direct_enum(adc_y.read())
-        print("x =", x_state, "y =", y_state, "k_ =", k_)
+        try:
+            k_ = k.value()
+            x_state = to_x_direct_enum(adc_x.read())
+            y_state = to_y_direct_enum(adc_y.read())
+            # print("x =", x_state, "y =", y_state, "k_ =", k_)
 
-        if x_state != last_x_state:
-            body = make_request(x_state)
-            print("send request", body)
-            send_request(body.encode("utf8"))
-            last_x_state = x_state
+            if x_state != last_x_state:
+                body = make_request(x_state)
+                print("send request", body)
+                send_request(body.encode("utf8"))
+                last_x_state = x_state
 
-        if y_state != last_y_state:
-            body = make_request(y_state)
-            print("send request", body)
-            send_request(body.encode("utf8"))
-            last_y_state = y_state
+            if y_state != last_y_state:
+                body = make_request(y_state)
+                print("send request", body)
+                send_request(body.encode("utf8"))
+                last_y_state = y_state
 
-        if k_ == 0:
-            body = make_request("stop")
-            print("send request", body)
-            send_request(body.encode("utf8"))
-
-        time.sleep(0.1)
+            if k_ == 0:
+                body = make_request("stop")
+                print("send request", body)
+                send_request(body.encode("utf8"))
+        except Exception as e:
+            print("some error", e)
+        time.sleep(0.2)
 
 
 main()
