@@ -67,17 +67,16 @@ def test_dispatch_cmd():
     def wait():
         time.sleep(2)
 
-
     while True:
-        dispatch_cmd('left')
+        dispatch_cmd("left")
         wait()
-        dispatch_cmd('right')
+        dispatch_cmd("right")
         wait()
-        dispatch_cmd('front')
+        dispatch_cmd("front")
         wait()
-        dispatch_cmd('forward')
+        dispatch_cmd("forward")
         wait()
-        dispatch_cmd('backward')
+        dispatch_cmd("backward")
         wait()
-        dispatch_cmd('stop')
+        dispatch_cmd("stop")
         wait()
