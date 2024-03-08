@@ -130,7 +130,7 @@ index_html = (
 
 # setup wifi
 ap = network.WLAN(network.AP_IF)
-ap.config(essid="lalala", authmode=4, password="12345678")
+ap.config(essid="toycar", authmode=4, password="123456789")
 ap.active(True)
 
 

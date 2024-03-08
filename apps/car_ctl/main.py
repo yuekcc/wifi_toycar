@@ -40,21 +40,44 @@ m2 = Motor(12, 13)
 
 
 def dispatch_cmd(cmd):
-    if cmd == b"left":
+    print("dispatch_cmd", cmd)
+    if cmd == "left":
         direct_motor.clockwise()
-    elif cmd == b"right":
+    elif cmd == "right":
         direct_motor.counterclockwise()
-    elif cmd == b"front":
+    elif cmd == "front":
         direct_motor.stop()
-    elif cmd == b"forward":
+    elif cmd == "forward":
         m1.clockwise()
         m2.clockwise()
-    elif cmd == b"backward":
+    elif cmd == "backward":
         m1.counterclockwise()
         m2.counterclockwise()
-    elif stop == b"stop":
+    elif cmd == "stop":
         direct_motor.stop()
         m1.stop()
         m2.stop()
     else:
         print("unknown command: ", cmd)
+
+
+def test_dispatch_cmd():
+    import time
+
+    def wait():
+        time.sleep(2)
+
+
+    while True:
+        dispatch_cmd('left')
+        wait()
+        dispatch_cmd('right')
+        wait()
+        dispatch_cmd('front')
+        wait()
+        dispatch_cmd('forward')
+        wait()
+        dispatch_cmd('backward')
+        wait()
+        dispatch_cmd('stop')
+        wait()
