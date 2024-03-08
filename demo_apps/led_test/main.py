@@ -1,4 +1,4 @@
-from machine import Pin, I2C
+from machine import Pin
 import time
 
 led1 = Pin(12, Pin.OUT)
