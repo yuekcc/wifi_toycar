@@ -137,3 +137,9 @@ while True:
 ```
 
 在保存的时候，选择 `MicroPython device`，然后点击 Run -> Run current script。顺利的话，就可以看到板载的 LED 灯在闪烁。
+
+## 上传代码
+
+通过 thonny 可以很方便上传代码到板子上：
+
+![保存到设备](assets/upload_to_device.png)
