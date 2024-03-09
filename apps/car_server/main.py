@@ -1,5 +1,4 @@
 import network
-import socket
 import asyncio
 from machine import Pin
 
@@ -10,26 +9,14 @@ class Motor:
         self._p2 = Pin(p2, Pin.OUT)
 
     def clockwise(self):
-        """
-        顺针方向转
-        """
-
         self._p1.on()
         self._p2.off()
 
     def counterclockwise(self):
-        """
-        逆时针方向转
-        """
-
         self._p1.off()
         self._p2.on()
 
     def stop(self):
-        """
-        停车
-        """
-
         self._p1.off()
         self._p2.off()
 
@@ -43,7 +30,7 @@ m2 = Motor(12, 13)
 
 
 def dispatch_cmd(cmd):
-    print("dispatch_cmd", cmd)
+    # print("dispatch_cmd", cmd)
     if cmd == "left":
         direct_motor.counterclockwise()
     elif cmd == "right":
@@ -61,28 +48,29 @@ def dispatch_cmd(cmd):
         m1.stop()
         m2.stop()
     else:
-        print("unknown command: ", cmd)
+        # print("unknown command: ", cmd)
+        pass
 
 
-def test_dispatch_cmd():
-    import time
+# def test_dispatch_cmd():
+#     import time
 
-    def wait():
-        time.sleep(2)
+#     def wait():
+#         time.sleep(2)
 
-    while True:
-        dispatch_cmd("left")
-        wait()
-        dispatch_cmd("right")
-        wait()
-        dispatch_cmd("front")
-        wait()
-        dispatch_cmd("forward")
-        wait()
-        dispatch_cmd("backward")
-        wait()
-        dispatch_cmd("stop")
-        wait()
+#     while True:
+#         dispatch_cmd("left")
+#         wait()
+#         dispatch_cmd("right")
+#         wait()
+#         dispatch_cmd("front")
+#         wait()
+#         dispatch_cmd("forward")
+#         wait()
+#         dispatch_cmd("backward")
+#         wait()
+#         dispatch_cmd("stop")
+#         wait()
 
 
 notfound = "HTTP/1.1 404 Not Found\r\nContent-Type: text/plain; charset=UTF-8\r\nX-Server: mpy\r\nConnection: close\r\n\r\n"
@@ -201,9 +189,7 @@ index_html = """<!DOCTYPE html>
 
 
 def get_header(mime_type):
-    return "HTTP/1.1 200 OK\r\nContent-Type: {}; charset=UTF-8\r\nX-Server: mpy\r\nConnection: close".format(
-        mime_type
-    )
+    return f"HTTP/1.1 200 OK\r\nContent-Type: {mime_type}; charset=UTF-8\r\nX-Server: mpy\r\nConnection: close"
 
 
 def reply_with_cmd_type(cmd_type):
@@ -215,12 +201,6 @@ def reply_with_cmd_type(cmd_type):
 def reply_with_index_html():
     header = get_header("text/html")
     return header + "\r\n\r\n" + index_html
-
-
-# setup wifi
-ap = network.WLAN(network.AP_IF)
-ap.config(essid="toycar", authmode=4, password="123456789")
-ap.active(True)
 
 
 def parse_request(chunk):
@@ -240,19 +220,21 @@ def handle_car_control(url):
     return cmd_type
 
 
-async def handle_connection(reader, writer):
+async def on_connection(reader, writer):
     req = await reader.read(512)
     http_method, url, version, req_body = parse_request(req.decode("utf8"))
-    print(http_method, url, version, req_body)
+    # print(http_method, url, version, req_body)
 
+    response_body = ""
     if url == "/":
-        writer.write(reply_with_index_html().encode("utf8"))
+        response_body = reply_with_index_html()
     elif url.startswith("/api/control/"):
         cmd_type = handle_car_control(url)
-        writer.write(reply_with_cmd_type(cmd_type).encode("utf8"))
+        response_body = reply_with_cmd_type(cmd_type)
     else:
-        writer.write(notfound.encode("utf8"))
+        response_body = notfound
 
+    writer.write(response_body.encode("utf8"))
     await writer.drain()
 
     writer.close()
@@ -260,10 +242,16 @@ async def handle_connection(reader, writer):
 
 
 async def main():
-    server = await asyncio.start_server(handle_connection, host="0.0.0.0", port=80)
-    print("toycar ready, hosted on http://%s:%d" % (ap.ifconfig()[0], 80))
+    server = await asyncio.start_server(on_connection, host="0.0.0.0", port=80)
+    # print("toycar ready, hosted on http://%s:%d" % (ap.ifconfig()[0], 80))
     await server.wait_closed()
-    print("shutdown")
+    # print("shutdown")
 
 
+# setup wifi
+ap = network.WLAN(network.AP_IF)
+ap.config(essid="toycar", authmode=4, password="123456789")
+ap.active(True)
+
+# start main
 asyncio.run(main())
