@@ -241,17 +241,12 @@ async def on_connection(reader, writer):
     await writer.wait_closed()
 
 
-async def main():
-    server = await asyncio.start_server(on_connection, host="0.0.0.0", port=80)
-    # print("toycar ready, hosted on http://%s:%d" % (ap.ifconfig()[0], 80))
-    await server.wait_closed()
-    # print("shutdown")
-
-
 # setup wifi
 ap = network.WLAN(network.AP_IF)
 ap.config(essid="toycar", authmode=4, password="123456789")
 ap.active(True)
 
-# start main
-asyncio.run(main())
+
+loop = asyncio.get_event_loop()
+loop.create_task(asyncio.start_server(on_connection, host="0.0.0.0", port=80))
+loop.run_forever()
