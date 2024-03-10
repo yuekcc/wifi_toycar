@@ -1,12 +1,12 @@
 import network
-import asyncio
+import socket
 from machine import Pin
 
 
 class Motor:
     def __init__(self, p1, p2):
-        self._p1 = Pin(p1, Pin.OUT)
-        self._p2 = Pin(p2, Pin.OUT)
+        self._p1 = Pin(p1, Pin.OUT, drive=Pin.DRIVE_3)
+        self._p2 = Pin(p2, Pin.OUT, drive=Pin.DRIVE_3)
 
     def clockwise(self):
         self._p1.on()
@@ -26,7 +26,7 @@ direct_motor = Motor(0, 1)
 
 # 动力电机
 m1 = Motor(4, 5)
-m2 = Motor(12, 13)
+m2 = Motor(2, 3)
 
 
 def dispatch_cmd(cmd):
@@ -48,8 +48,7 @@ def dispatch_cmd(cmd):
         m1.stop()
         m2.stop()
     else:
-        # print("unknown command: ", cmd)
-        pass
+        print("unknown command: ", cmd)
 
 
 # def test_dispatch_cmd():
@@ -220,10 +219,9 @@ def handle_car_control(url):
     return cmd_type
 
 
-async def on_connection(reader, writer):
-    req = await reader.read(512)
-    http_method, url, version, req_body = parse_request(req.decode("utf8"))
-    # print(http_method, url, version, req_body)
+def on_connection(request):
+    http_method, url, version, req_body = parse_request(request)
+    print(http_method, url, version, req_body)
 
     response_body = ""
     if url == "/":
@@ -234,19 +232,33 @@ async def on_connection(reader, writer):
     else:
         response_body = notfound
 
-    writer.write(response_body.encode("utf8"))
-    await writer.drain()
-
-    writer.close()
-    await writer.wait_closed()
+    return response_body
 
 
-# setup wifi
-ap = network.WLAN(network.AP_IF)
-ap.config(essid="toycar", authmode=4, password="123456789")
-ap.active(True)
+def init_network():
+    ap = network.WLAN(network.AP_IF)
+    ap.config(essid="toycar", authmode=4, password="123456789")
+    ap.active(True)
+    return ap.ifconfig()[0]  # ip
 
 
-loop = asyncio.get_event_loop()
-loop.create_task(asyncio.start_server(on_connection, host="0.0.0.0", port=80))
-loop.run_forever()
+def main():
+    gateway_ip = init_network()
+    print(f"wifi toycar ready, ip = {gateway_ip}")
+
+    s = socket.socket()
+    s.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
+    s.bind((gateway_ip, 80))
+    s.listen(5)
+    print(f"api server hosted on http://{gateway_ip}:80")
+
+    while True:
+        res = s.accept()
+        client_s = res[0]
+        request = client_s.recv(4096)
+        response = on_connection(request.decode("utf8"))
+        client_s.send(response.encode("utf8"))
+        client_s.close()
+
+
+main()
