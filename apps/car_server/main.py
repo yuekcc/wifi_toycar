@@ -2,6 +2,8 @@ import network
 import socket
 from machine import Pin
 
+WLAN_ESSID = "toycar"
+WLAN_PASSWORD = "123456789"
 
 class Motor:
     def __init__(self, p1, p2):
@@ -51,25 +53,25 @@ def dispatch_cmd(cmd):
         print("unknown command: ", cmd)
 
 
-# def test_dispatch_cmd():
-#     import time
+def test_dispatch_cmd():
+    import time
 
-#     def wait():
-#         time.sleep(2)
+    def wait():
+        time.sleep(2)
 
-#     while True:
-#         dispatch_cmd("left")
-#         wait()
-#         dispatch_cmd("right")
-#         wait()
-#         dispatch_cmd("front")
-#         wait()
-#         dispatch_cmd("forward")
-#         wait()
-#         dispatch_cmd("backward")
-#         wait()
-#         dispatch_cmd("stop")
-#         wait()
+    while True:
+        dispatch_cmd("left")
+        wait()
+        dispatch_cmd("right")
+        wait()
+        dispatch_cmd("front")
+        wait()
+        dispatch_cmd("forward")
+        wait()
+        dispatch_cmd("backward")
+        wait()
+        dispatch_cmd("stop")
+        wait()
 
 
 notfound = "HTTP/1.1 404 Not Found\r\nContent-Type: text/plain; charset=UTF-8\r\nX-Server: mpy\r\nConnection: close\r\n\r\n"
@@ -237,28 +239,29 @@ def on_connection(request):
 
 def init_network():
     ap = network.WLAN(network.AP_IF)
-    ap.config(essid="toycar", authmode=4, password="123456789")
+    ap.config(essid=WLAN_ESSID, authmode=4, password=WLAN_PASSWORD)
     ap.active(True)
     return ap.ifconfig()[0]  # ip
 
 
 def main():
     gateway_ip = init_network()
-    print(f"wifi toycar ready, ip = {gateway_ip}")
+    print(f"Wifi toycar ready, ip = {gateway_ip}")
+    print(f"You can connect to '{WLAN_ESSID}' with password '{WLAN_PASSWORD}'")
 
-    s = socket.socket()
-    s.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
+    s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+    # s.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
     s.bind((gateway_ip, 80))
     s.listen(5)
-    print(f"api server hosted on http://{gateway_ip}:80")
+    print(f"\nApi server hosted on http://{gateway_ip}:80")
 
     while True:
-        res = s.accept()
-        client_s = res[0]
-        request = client_s.recv(4096)
-        response = on_connection(request.decode("utf8"))
-        client_s.send(response.encode("utf8"))
-        client_s.close()
+        client_s, addr = s.accept()
+        with client_s:
+            print(f"connected by {addr}")
+            data = client_s.recv(1024)
+            response = on_connection(data.decode("utf8"))
+            client_s.sendall(response.encode("utf8"))
 
 
 main()

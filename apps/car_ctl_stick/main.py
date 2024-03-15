@@ -3,7 +3,7 @@ import socket
 import time
 import network
 
-WLAN_SSID = "toycar"
+WLAN_ESSID = "toycar"
 WLAN_PASSWORD = "123456789"
 API_SERVER_HOST = "192.168.4.1"
 API_SERVER_PORT = 80
@@ -55,19 +55,21 @@ def init_network():
     global API_SERVER_HOST
 
     if not wlan.isconnected():
+        print(f"Try connect to '{WLAN_ESSID}' with password '{WLAN_PASSWORD}'")
+
         wlan.scan()
-        wlan.connect(WLAN_SSID, WLAN_PASSWORD)
+        wlan.connect(WLAN_ESSID, WLAN_PASSWORD)
         while not wlan.isconnected():
             pass
         ip, netmask, gateway, dns_addr = wlan.ifconfig()
         API_SERVER_HOST = gateway
+    print(f"Connected to {WLAN_ESSID}, ip = {ip}")
 
 
 def send_request(body):
-    s = socket.socket()
-    s.connect((API_SERVER_HOST, API_SERVER_PORT))
-    s.send(body.encode("utf8"))
-    s.close()
+    with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
+        s.connect((API_SERVER_HOST, API_SERVER_PORT))
+        s.sendall(body.encode("utf8"))
 
 
 def main():
